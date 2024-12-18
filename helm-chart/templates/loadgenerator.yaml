@@ -70,8 +70,8 @@ spec:
         - /bin/sh
         - -exc
         - |
-          MAX_RETRIES=20
-          RETRY_INTERVAL=10
+          MAX_RETRIES=10
+          RETRY_INTERVAL=30
           for i in $(seq 1 $MAX_RETRIES); do
             echo "Attempt $i: Pinging frontend: ${FRONTEND_ADDR}..."
             STATUSCODE=$(wget --server-response http://${FRONTEND_ADDR} 2>&1 | awk '/^  HTTP/{print $2}')
@@ -112,7 +112,7 @@ spec:
         - name: FRONTEND_ADDR
           value: "{{ .Values.frontend.name }}:80"
         - name: USERS
-          value: "10"
+          value: "3"
         - name: RATE
           value: "1"
         resources:
