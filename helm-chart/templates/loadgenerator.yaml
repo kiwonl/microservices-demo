@@ -93,6 +93,8 @@ spec:
           privileged: false
           readOnlyRootFilesystem: true
         image: busybox:latest@sha256:2919d0172f7524b2d8df9e50066a682669e6d170ac0f6a49676d54358fe970b5
+        resources:
+          {{- toYaml .Values.loadGenerator.resources | nindent 10 }}
         env:
         - name: FRONTEND_ADDR
           value: "{{ .Values.frontend.name }}:80"
