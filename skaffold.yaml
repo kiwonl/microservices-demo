@@ -55,7 +55,7 @@ manifests:
     releases:
     - name: onlineboutique
       chartPath: helm-chart
-      namespace: onlineboutique      
+      namespace: ob      
       valuesFiles:
        - helm-chart/values.yaml
   # kustomize:

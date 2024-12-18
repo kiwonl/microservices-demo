@@ -43,7 +43,7 @@ service/istio-ingressgateway   LoadBalancer   34.118.239.183   34.171.177.220   
 # [microserviced-demo](https://raw.githubusercontent.com/GoogleCloudPlatform/anthos-service-mesh-samples/main/docs/shared/online-boutique/kubernetes-manifests.yaml)
 
 ```
-export OB_NAMESPACE=onlineboutique
+export OB_NAMESPACE=ob
 ```
 ```
 kubectl create namespace ${OB_NAMESPACE}
