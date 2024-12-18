@@ -26,18 +26,72 @@
 # `gcloud builds submit --config=cloudbuild.yaml --substitutions=_ZONE=us-central1-b,_CLUSTER=demo-app-staging .`
 
 steps:
-- id: 'Deploy application to cluster'
-  name: 'gcr.io/k8s-skaffold/skaffold:v2.13.2'
-  entrypoint: 'bash'
+#- name: gcr.io/cloud-builders/gsutil
+#  id: download-skaffold-cache
+#  args:
+#    - 'cp'
+#    - '-c'
+#    - '${_CACHE_URI}'
+#    - '/workspace/cache'                   # always write skaffold cache to filename cache in workspace
+- name: gcr.io/k8s-skaffold/skaffold
+  id: build-and-push-images
   args:
-  - '-c'
-  - >
-    gcloud container clusters get-credentials --zone=$_ZONE $_CLUSTER;
-    skaffold run -f=skaffold.yaml --default-repo=gcr.io/$PROJECT_ID;
-
+    - skaffold
+    - build
+    - '--profile=gcb'
+    - '--interactive=false'
+    - '--default-repo=${_DEFAUILT_REPOSITORY}'
+#    - '--cache-file=/workspace/$_CACHE'   # set _CACHE to anything other than "cache" e.g. "no-cache" to reset skaffold cache
+    - '--file-output=/workspace/artifacts.json'
+#- name: gcr.io/google.com/cloudsdktool/cloud-sdk
+#  id: upload-skaffold-cache
+#  args:
+#    - 'gsutil'
+#    - 'cp'
+#    - '/workspace/$_CACHE'
+#    - '${_CACHE_URI}]'
+#- name: gcr.io/k8s-skaffold/skaffold:v2.8.0 # python set up should be baked into a custom builder image to speed up build times
+#  id: run-tests
+#  script: |
+#    #!/bin/bash
+#    apt-get update
+#    apt-get -y install python3-venv
+#    python3 -m venv $HOME/venv-python-tests
+#    . $HOME/venv-python-tests/bin/activate
+#    pip install --upgrade pip
+#    pip install pylint
+#    skaffold test --build-artifacts=/workspace/artifacts.json --module=$SERVICE --assume-yes
+#  env:
+#    - 'TEAM=$_TEAM'
+#    - 'SERVICE=$_SERVICE'
+- name: gcr.io/google.com/cloudsdktool/cloud-sdk
+  id: trigger-release
+  args:
+    - 'gcloud'
+    - 'deploy'
+    - 'releases'
+    - 'create'
+    - 'rel-${SHORT_SHA}'
+    - '--delivery-pipeline=${_DELIVERY_PIPELINE_NAME}'
+    - '--build-artifacts=/workspace/artifacts.json'
+    - '--region=${_REGION}'
+    - '--annotations=commitId=${REVISION_ID}'
+#   - '--gcs-source-staging-dir=$_SOURCE_STAGING_BUCKET/$SHORT_SHA'
+    
 # Add more power, and more time, for heavy Skaffold build
 timeout: '3600s'
+# https://cloud.google.com/build/docs/securing-builds/configure-user-specified-service-accounts?hl=ko#execute_a_build_using_a_config_file
+# serviceAccount: 'projects/${PROJECT_ID}/serviceAccounts/cloudbuild@${PROJECT_ID}.iam.gserviceaccount.com'
 options:
-  machineType: 'N1_HIGHCPU_8'
-  
+  # machineType: 'E2_HIGHCPU_8'
+  logging: CLOUD_LOGGING_ONLY #https://cloud.google.com/build/docs/securing-builds/configure-user-specified-service-accounts?hl=ko#execute_a_build_using_a_config_file
+#  workerPool: 'projects/${PROJECT_ID}/locations/${_REGION}/workerPools/microservices-pp'
+
+substitutions:
+  _DELIVERY_PIPELINE_NAME: online-boutique-pipeline
+  _DEFAUILT_REPOSITORY: us-central1-docker.pkg.dev/${PROJECT_ID}/docker-repo
+  _REGION: us-central1
+  _CACHE_URI: gs://cache-for-build/
+  _CACHE: cache
+ 
 # [END cloudbuild_microservice_demo_cloudbuild]

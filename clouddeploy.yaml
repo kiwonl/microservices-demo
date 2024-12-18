@@ -1,0 +1,18 @@
+# gcloud deploy apply --file=clouddeploy.yaml --region=us-central1 --project=PROJECT_ID
+# replace projectid of targets
+apiVersion: deploy.cloud.google.com/v1
+kind: DeliveryPipeline
+metadata:
+  name: online-boutique-pipeline
+description: online-boutique-pipeline
+serialPipeline:
+ stages:
+ - targetId: online-boutique-target
+---
+apiVersion: deploy.cloud.google.com/v1
+kind: Target
+metadata:
+  name: online-boutique-target
+description: online-boutique cluster
+gke:
+  cluster: projects/kiwonlee-demo/locations/us-central1/clusters/online-boutique
