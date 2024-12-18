@@ -46,8 +46,8 @@ build:
     context: src/frontend
   - image: adservice
     context: src/adservice
-  # tagPolicy:
-  #   gitCommit: {}
+  tagPolicy:
+    sha256: {}
   local:
     useBuildkit: false
 manifests:
