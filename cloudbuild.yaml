@@ -51,7 +51,7 @@ steps:
       "deploy", "releases", "create", "rel-${SHORT_SHA}",
       "--delivery-pipeline", "${_DELIVERY_PIPELINE_NAME}",
       "--description", "buildID=${BUILD_ID},commitId=${REVISION_ID}",
-      "--region", "${_REGION}",
+      "--region", "${LOCATION}",
       "--annotations", "commitId=${REVISION_ID}",
       "--build-artifacts", "/workspace/artifacts.json"
     ]    
@@ -64,6 +64,5 @@ substitutions:
   _DELIVERY_PIPELINE_NAME: online-boutique-pipeline
   _DEFAUILT_REPOSITORY: us-central1-docker.pkg.dev/${PROJECT_ID}/docker-repo
   _CACHE_URI: gs://cache-for-build/
-  _CACHE: cache
- 
+  _CACHE: cache 
 # [END cloudbuild_microservice_demo_cloudbuild]
