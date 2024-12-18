@@ -55,14 +55,14 @@ manifests:
     releases:
     - name: onlineboutique
       chartPath: helm-chart
-      namespace: onlineboutique
+      namespace: onlineboutique      
       valuesFiles:
        - helm-chart/values.yaml
   # kustomize:
   #   paths:
   #   - kubernetes-manifests
-deploy:
-  kubectl: {}
+# deploy:
+#   kubectl: {}
 # "gcb" profile allows building and pushing the images
 # on Google Container Builder without requiring docker
 # installed on the developer machine. However, note that
