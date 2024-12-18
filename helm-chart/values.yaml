@@ -147,7 +147,7 @@ frontend:
 loadGenerator:
   create: true
   name: loadgenerator
-  checkFrontendInitContainer: false
+  checkFrontendInitContainer: true
   resources:
     requests:
       # cpu: 300m
