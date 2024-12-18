@@ -65,10 +65,12 @@ adService:
   name: adservice
   resources:
     requests:
-      cpu: 200m
+      # cpu: 200m
+      cpu: 100m
       memory: 180Mi
     limits:
-      cpu: 300m
+      # cpu: 300m
+      cpu: 200m
       memory: 300Mi
 
 cartService:
@@ -76,10 +78,12 @@ cartService:
   name: cartservice
   resources:
     requests:
-      cpu: 200m
+      # cpu: 200m
+      cpu: 100m
       memory: 64Mi
     limits:
-      cpu: 300m
+      cpu: 200m
+      # cpu: 300m
       memory: 128Mi
 
 checkoutService:
@@ -118,7 +122,7 @@ emailService:
 frontend:
   create: true
   name: frontend
-  externalService: false
+  externalService: true
   cymbalBranding: false
   # One of: local, gcp, aws, azure, onprem, alibaba. When not set, defaults to "local" unless running in GKE, otherwise auto-sets to gcp.
   platform: local
@@ -143,13 +147,15 @@ frontend:
 loadGenerator:
   create: true
   name: loadgenerator
-  checkFrontendInitContainer: false
+  checkFrontendInitContainer: true
   resources:
     requests:
-      cpu: 300m
+      # cpu: 300m
+      cpu: 100m
       memory: 256Mi
     limits:
-      cpu: 500m
+      # cpu: 500m
+      cpu: 200m
       memory: 512Mi
 
 paymentService:
