@@ -70,12 +70,11 @@ spec:
         - /bin/sh
         - -exc
         - |
-          MAX_RETRIES=10
-          RETRY_INTERVAL=30
+          MAX_RETRIES=12
+          RETRY_INTERVAL=10
           for i in $(seq 1 $MAX_RETRIES); do
             echo "Attempt $i: Pinging frontend: ${FRONTEND_ADDR}..."
             STATUSCODE=$(wget --server-response http://${FRONTEND_ADDR} 2>&1 | awk '/^  HTTP/{print $2}')
-            echo "Status code: $STATUSCODE" 
             if [ $STATUSCODE -eq 200 ]; then
                 echo "Frontend is reachable."
                 exit 0
@@ -93,8 +92,7 @@ spec:
               - ALL
           privileged: false
           readOnlyRootFilesystem: true
-        # image: busybox:latest@sha256:2919d0172f7524b2d8df9e50066a682669e6d170ac0f6a49676d54358fe970b5
-        image: busybox:latest
+        image: busybox:latest@sha256:2919d0172f7524b2d8df9e50066a682669e6d170ac0f6a49676d54358fe970b5
         env:
         - name: FRONTEND_ADDR
           value: "{{ .Values.frontend.name }}:80"
@@ -113,7 +111,7 @@ spec:
         - name: FRONTEND_ADDR
           value: "{{ .Values.frontend.name }}:80"
         - name: USERS
-          value: "3"
+          value: "10"
         - name: RATE
           value: "1"
         resources:
