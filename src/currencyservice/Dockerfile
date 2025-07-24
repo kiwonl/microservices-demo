@@ -27,7 +27,9 @@ COPY package*.json ./
 
 RUN npm install --only=production
 
-FROM node:20.18.1-alpine@sha256:24fb6aa7020d9a20b00d6da6d1714187c45ed00d1eb4adb01395843c338b9372
+FROM alpine:3.20.3@sha256:1e42bbe2508154c9126d48c2b8a75420c3544343bf86fd041fb7527e017a4b4a
+
+RUN apk add --no-cache nodejs
 
 WORKDIR /usr/src/app
 
