@@ -73,7 +73,7 @@ manifests:
 # start from scratch and therefore take a long time.
 #
 # This is not used by default. To use it, run:
-#     skaffold run -p gcb
+#     skaffold run -p gcb 
 profiles:
 - name: gcb
   build:
