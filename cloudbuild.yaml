@@ -40,7 +40,7 @@ steps:
     - skaffold
     - build
     - '--cache-artifacts'
-    - '--profile=staging'
+#   - '--profile=staging'
     - '--interactive=false'
     - '--default-repo=${_DEFAUILT_REPOSITORY}'
     - '--cache-file=/workspace/$_CACHE'   # set _CACHE to anything other than "cache" e.g. "no-cache" to reset skaffold cache
@@ -89,7 +89,7 @@ steps:
 # Add more power, and more time, for heavy Skaffold build
 timeout: '3600s'
 # https://cloud.google.com/build/docs/securing-builds/configure-user-specified-service-accounts?hl=ko#execute_a_build_using_a_config_file
-serviceAccount: 'projects/${PROJECT_ID}/serviceAccounts/boa-build-sa@kiwonlee-demo-boa.iam.gserviceaccount.com'
+serviceAccount: 'projects/${PROJECT_ID}/serviceAccounts/ob-build-sa@kiwonlee-demo-ob.iam.gserviceaccount.com'
 options:
   machineType: 'E2_HIGHCPU_8'
   logging: CLOUD_LOGGING_ONLY #https://cloud.google.com/build/docs/securing-builds/configure-user-specified-service-accounts?hl=ko#execute_a_build_using_a_config_file
