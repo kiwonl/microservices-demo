@@ -99,7 +99,7 @@ substitutions:
   _DELIVERY_PIPELINE_NAME: ob-pipeline
   _DEFAUILT_REPOSITORY: us-central1-docker.pkg.dev/${PROJECT_ID}/docker-repo
   _REGION: us-central1
-  _CACHE_URI: gs://cache-for-build/skaffold-cache
-  _CACHE: skaffold-cache
+  _CACHE_URI: gs://skaffold-cache/cache
+  _CACHE: cache
 
 # [END cloudbuild_microservice_demo_cloudbuild]
