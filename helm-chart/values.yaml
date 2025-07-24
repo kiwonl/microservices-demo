@@ -50,7 +50,7 @@ opentelemetryCollector:
   create: false
   name: opentelemetrycollector
   # Specifies the project id for the otel collector. If set as "PROJECT_ID" (default value), an initContainer will automatically retrieve the project id value from the metadata server.
-  projectId: "PROJECT_ID"
+  projectId: "kiwonlee-demo-ob"
 
 googleCloudOperations:
   profiler: false
@@ -63,10 +63,6 @@ seccompProfile:
 
 securityContext:
   enable: true
-
-istio:
-  create: true
-  name: frontend
 
 adService:
   create: true
@@ -126,15 +122,25 @@ emailService:
 frontend:
   create: true
   name: frontend
+  cymbalBranding: false
+  # One of: local, gcp, aws, azure, onprem, alibaba. When not set, defaults to "local" unless running in GKE, otherwise auto-sets to gcp.
+  platform: local
+  singleSharedSession: false
 #------------------------------------------------------
 # LB 타입의 Service disable 하고, Gateway 를 Enable
   externalService: false
   gateway: true
 #------------------------------------------------------
-  cymbalBranding: false
-  # One of: local, gcp, aws, azure, onprem, alibaba. When not set, defaults to "local" unless running in GKE, otherwise auto-sets to gcp.
-  platform: local
-  singleSharedSession: false
+#------------------------------------------------------
+# Istio Gateway 설정
+  istioGateway:
+    create: false
+    hosts:
+    - "*"
+    servers:
+      number: 80
+      name: http
+      protocol: HTTP
   virtualService:
     create: false
     hosts:
@@ -142,8 +148,7 @@ frontend:
     gateway:
       name: asm-ingressgateway
       namespace: asm-ingress
-      labelKey: asm
-      labelValue: ingressgateway
+#------------------------------------------------------
   resources:
     requests:
       cpu: 100m

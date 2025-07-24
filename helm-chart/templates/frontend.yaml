@@ -289,6 +289,25 @@ spec:
         ports:
         - "8080"
 {{- end }}
+{{- if .Values.frontend.istioGateway.create }}
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: {{ .Values.frontend.name }}
+  namespace: {{.Release.Namespace}}
+spec:
+  selector:
+    istio: ingressgateway # use Istio default gateway implementation
+  servers:
+  - port:
+      number: {{ .Values.frontend.gateway.servers.number }}
+      name: {{ .Values.frontend.gateway.servers.name }}
+      protocol: {{ .Values.frontend.gateway.servers.protocol }}
+    hosts:
+    {{- toYaml . | nindent 2 }}
+    {{- end }}
+{{- end }}
 {{- if .Values.frontend.virtualService.create }}
 ---
 apiVersion: networking.istio.io/v1alpha3
@@ -302,7 +321,7 @@ spec:
   {{- toYaml . | nindent 2 }}
   {{- end }}
   gateways:
-  - {{ .Values.frontend.virtualService.gateway.namespace }}/{{ .Values.frontend.virtualService.gateway.name }}
+  - {{.Release.Namespace}}/{{ .Values.frontend.name }}
   http:
   - route:
     - destination:
