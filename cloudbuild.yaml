@@ -28,21 +28,21 @@
 # https://cloud.google.com/deploy/docs/integrating-ci?hl=ko#an_example_configuration_using_skaffold
 # [START cloudbuild_microservice_demo_cloudbuild]
 steps:
-# - name: gcr.io/cloud-builders/gsutil
-#   id: download-skaffold-cache
-#   entrypoint: 'bash'
-#   args:
-#     - '-c'
-#     - 'gsutil cp -c ${_CACHE_URI} /workspace/cache || true' 
+- name: gcr.io/cloud-builders/gsutil
+  id: download-skaffold-cache
+  entrypoint: 'bash'
+  args:
+    - '-c'
+    - 'gsutil cp -c ${_CACHE_URI} /workspace/cache || true' 
 - name: gcr.io/k8s-skaffold/skaffold
   id: build-and-push-images
   args:
     - skaffold
     - build
-    - '--cache-artifacts=false'
+    # - '--cache-artifacts=false'
     - '--interactive=false'
     - '--default-repo=${_DEFAUILT_REPOSITORY}'
-    # - '--cache-file=/workspace/$_CACHE'   # set _CACHE to anything other than "cache" e.g. "no-cache" to reset skaffold cache
+    - '--cache-file=/workspace/$_CACHE'   # set _CACHE to anything other than "cache" e.g. "no-cache" to reset skaffold cache
     - '--file-output=/workspace/artifacts.json'
 - name: gcr.io/google.com/cloudsdktool/cloud-sdk
   id: show-artifacts-json
@@ -50,13 +50,13 @@ steps:
   args:
     - '-c'
     - 'cat /workspace/artifacts.json'
-# - name: gcr.io/google.com/cloudsdktool/cloud-sdk
-#   id: upload-skaffold-cache
-#   args:
-#     - 'gsutil'
-#     - 'cp'
-#     - '/workspace/$_CACHE'
-#     - '${_CACHE_URI}'
+- name: gcr.io/google.com/cloudsdktool/cloud-sdk
+  id: upload-skaffold-cache
+  args:
+    - 'gsutil'
+    - 'cp'
+    - '/workspace/$_CACHE'
+    - '${_CACHE_URI}'
 ##################
 #- name: gcr.io/k8s-skaffold/skaffold:v2.8.0 # python set up should be baked into a custom builder image to speed up build times
 #  id: run-tests
