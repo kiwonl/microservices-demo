@@ -33,7 +33,7 @@ steps:
 #   entrypoint: 'bash'
 #   args:
 #     - '-c'
-#     - 'gsutil cp -c ${_CACHE_URI} /workspace/cache || true'
+#     - 'gsutil cp -c ${_CACHE_URI} /workspace/cache || true' 
 - name: gcr.io/k8s-skaffold/skaffold
   id: build-and-push-images
   args:
