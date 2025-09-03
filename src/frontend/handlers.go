@@ -616,6 +616,7 @@ func renderCurrencyLogo(currencyCode string) string {
 		"EUR": "€",
 		"TRY": "₺",
 		"GBP": "£",
+		"KRW": "₩",
 	}
 
 	logo := "$" //default
