@@ -100,7 +100,7 @@ profiles:
   - op: add
     path: /manifests/kustomize/paths/1
     value: kustomize/components/network-policies
-# ---
+---
 apiVersion: skaffold/v3
 kind: Config
 metadata:
