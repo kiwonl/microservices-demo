@@ -17,7 +17,7 @@ kind: Config
 metadata:
   name: app
 build:
-  platforms: ["linux/amd64", "linux/arm64"]
+  # platforms: ["linux/amd64", "linux/arm64"]
   artifacts:
   # image tags are relative; to specify an image repo (e.g. GCR), you
   # must provide a "default repo" using one of the methods described
@@ -48,16 +48,24 @@ build:
   - image: adservice
     context: src/adservice
   tagPolicy:
-    gitCommit: {}
+    sha256: {}
+    # gitCommit: {}
   local:
     useDockerCLI: true
     useBuildkit: true
 manifests:
-  kustomize:
-    paths:
-    - kubernetes-manifests
-deploy:
-  kubectl: {}
+  helm:
+    releases:
+    - name: onlineboutique
+      chartPath: helm-chart
+      namespace: ob
+      valuesFiles:
+       - helm-chart/values.yaml
+  # kustomize:
+  #   paths:
+  #   - kubernetes-manifests
+# deploy:
+#   kubectl: {}
 # "gcb" profile allows building and pushing the images
 # on Google Container Builder without requiring docker
 # installed on the developer machine. However, note that
@@ -65,7 +73,7 @@ deploy:
 # start from scratch and therefore take a long time.
 #
 # This is not used by default. To use it, run:
-#     skaffold run -p gcb
+#     skaffold run -p gcb 
 profiles:
 - name: gcb
   build:
@@ -92,31 +100,31 @@ profiles:
   - op: add
     path: /manifests/kustomize/paths/1
     value: kustomize/components/network-policies
----
-apiVersion: skaffold/v3
-kind: Config
-metadata:
-  name: loadgenerator
-requires:
-- configs:
-  - app
-build:
-  platforms: ["linux/amd64", "linux/arm64"]
-  artifacts:
-  - image: loadgenerator
-    context: src/loadgenerator
-  local:
-    useDockerCLI: true
-    useBuildkit: true
-manifests:
-  rawYaml:
-  - ./kubernetes-manifests/loadgenerator.yaml
-deploy:
-  kubectl: {}
-profiles:
-- name: gcb
-  build:
-    googleCloudBuild:
-      diskSizeGb: 300
-      machineType: N1_HIGHCPU_32
-      timeout: 4000s
+# ---
+# apiVersion: skaffold/v3
+# kind: Config
+# metadata:
+#   name: loadgenerator
+# requires:
+# - configs:
+#   - app
+# build:
+#   platforms: ["linux/amd64", "linux/arm64"]
+#   artifacts:
+#   - image: loadgenerator
+#     context: src/loadgenerator
+#   local:
+#     useDockerCLI: true
+#     useBuildkit: true
+# manifests:
+#   rawYaml:
+#   - ./kubernetes-manifests/loadgenerator.yaml
+# deploy:
+#   kubectl: {}
+# profiles:
+# - name: gcb
+#   build:
+#     googleCloudBuild:
+#       diskSizeGb: 300
+#       machineType: N1_HIGHCPU_32
+#       timeout: 4000s

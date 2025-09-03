@@ -1,0 +1,18 @@
+# gcloud deploy apply --file=clouddeploy.yaml --region=us-central1 --project=PROJECT_ID
+# replace projectid of targets
+apiVersion: deploy.cloud.google.com/v1
+kind: DeliveryPipeline
+metadata:
+  name: ob-pipeline
+description: ob-pipeline
+serialPipeline:
+ stages:
+ - targetId: ob-prod
+---
+apiVersion: deploy.cloud.google.com/v1
+kind: Target
+metadata:
+  name: ob-prod
+description: ob-prod
+gke:
+  cluster: projects/kiwonlee-demo-ob/locations/us-central1/clusters/ob-prod

@@ -12,6 +12,33 @@ If you’re using this demo, please **★Star** this repository to show your int
 
 **Note to Googlers:** Please fill out the form at [go/microservices-demo](http://go/microservices-demo).
 
+## ServiceAccounts
+
+ob-default@kiwonlee-demo-ob.iam.gserviceaccount.com # default sa
+- Kubernetes Engine Default Node Service Account
+- Monitoring Metric Writer
+
+ob-build@kiwonlee-demo-ob.iam.gserviceaccount.com # cloud build sa
+- Cloud Build Service Account
+- Cloud Build Service Agent
+- Cloud Deploy Operator
+- Service Account User
+
+
+## Troubleshotting
+1. Permission Error from Gatekeeper
+```
+Permission monitoring.metricDescriptors.create denied (or the resource may not exist).
+```
+```
+$ gcloud iam service-accounts add-iam-policy-binding ob-default@kiwonlee-demo-ob.iam.gserviceaccount.com \
+    --role roles/iam.workloadIdentityUser \
+    --member "serviceAccount:kiwonlee-demo-ob.svc.id.goog[gatekeeper-system/gatekeeper-admin]"
+$ kubectl annotate serviceaccount gatekeeper-admin \
+    --namespace gatekeeper-system \
+    iam.gke.io/gcp-service-account=ob-default@kiwonlee-demo-ob.iam.gserviceaccount.com
+```
+
 ## Architecture
 
 **Online Boutique** is composed of 11 microservices written in different
@@ -164,4 +191,5 @@ Find **Protocol Buffers Descriptions** at the [`./protos` directory](/protos).
   - [Introduction to Service Management with Istio](https://www.youtube.com/watch?v=wCJrdKdD6UM&feature=youtu.be&t=586)
 - [Google Cloud Next'18 London – Keynote](https://youtu.be/nIq2pkNcfEI?t=3071)
   showing Stackdriver Incident Response Management
-- [Microservices demo showcasing Go Micro](https://github.com/go-micro/demo)
+
+

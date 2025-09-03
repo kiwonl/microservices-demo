@@ -29,9 +29,12 @@ serviceAccounts:
   # Annotations to add only for the cartservice app. This allows to follow the least privilege principle where only cartservice needs to connect to external database for example via Workload Identity.
   annotationsOnlyForCartservice: false
 
+#------------------------------------------------------
+# NetworkPolicues 적용
 networkPolicies:
   # Specifies if the NetworkPolicies are created or not. If true, one fine granular NetworkPolicy per app is created.
   create: false
+#------------------------------------------------------
 
 sidecars:
   # Specifies if the Sidecars are created or not. If true, one fine granular Sidecar per app is created.
@@ -41,11 +44,13 @@ authorizationPolicies:
   # Specifies if the AuthorizationPolicies are created or not. If true, one fine granular AuthorizationPolicy per app is created.
   create: false
 
+#------------------------------------------------------
+# GMP 연동을 위한 otel collector 설정
 opentelemetryCollector:
   create: false
   name: opentelemetrycollector
   # Specifies the project id for the otel collector. If set as "PROJECT_ID" (default value), an initContainer will automatically retrieve the project id value from the metadata server.
-  projectId: "PROJECT_ID"
+  projectId: "kiwonlee-demo-ob"
 
 googleCloudOperations:
   profiler: false
@@ -64,10 +69,10 @@ adService:
   name: adservice
   resources:
     requests:
-      cpu: 200m
+      cpu: 100m
       memory: 180Mi
     limits:
-      cpu: 300m
+      cpu: 200m
       memory: 300Mi
 
 cartService:
@@ -75,8 +80,8 @@ cartService:
   name: cartservice
   resources:
     requests:
-      cpu: 200m
-      memory: 128Mi
+      cpu: 100m
+      memory: 60Mi
     limits:
       cpu: 300m
       memory: 256Mi
@@ -98,10 +103,10 @@ currencyService:
   resources:
     requests:
       cpu: 100m
-      memory: 128Mi
+      memory: 64Mi
     limits:
       cpu: 200m
-      memory: 256Mi
+      memory: 128Mi
 
 emailService:
   create: true
@@ -117,11 +122,25 @@ emailService:
 frontend:
   create: true
   name: frontend
-  externalService: true
   cymbalBranding: false
   # One of: local, gcp, aws, azure, onprem, alibaba. When not set, defaults to "local" unless running in GKE, otherwise auto-sets to gcp.
   platform: local
   singleSharedSession: false
+#------------------------------------------------------
+# LB 타입의 Service disable 하고, Gateway 를 Enable
+  externalService: false
+  gateway: true
+#------------------------------------------------------
+#------------------------------------------------------
+# Istio Gateway 설정
+  istioGateway:
+    create: false
+    hosts:
+    - "*"
+    servers:
+      number: 80
+      name: http
+      protocol: HTTP
   virtualService:
     create: false
     hosts:
@@ -129,8 +148,7 @@ frontend:
     gateway:
       name: asm-ingressgateway
       namespace: asm-ingress
-      labelKey: asm
-      labelValue: ingressgateway
+#------------------------------------------------------
   resources:
     requests:
       cpu: 100m
@@ -142,13 +160,13 @@ frontend:
 loadGenerator:
   create: true
   name: loadgenerator
-  checkFrontendInitContainer: true
+  checkFrontendInitContainer: false
   resources:
     requests:
-      cpu: 300m
+      cpu: 100m
       memory: 256Mi
     limits:
-      cpu: 500m
+      cpu: 200m
       memory: 512Mi
 
 paymentService:
@@ -157,10 +175,10 @@ paymentService:
   resources:
     requests:
       cpu: 100m
-      memory: 128Mi
+      memory: 64Mi
     limits:
       cpu: 200m
-      memory: 256Mi
+      memory: 128Mi
 
 productCatalogService:
   create: true

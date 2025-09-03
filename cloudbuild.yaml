@@ -12,32 +12,93 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# [START cloudbuild_microservice_demo_cloudbuild]
-
 # This configuration file is used to build and deploy the app into a
-# GKE cluster using Google Cloud Build.
+# GKE cluster using Google Cloud Build and Google Cloud Deploy.
 #
 # PREREQUISITES:
-# - Cloud Build service account must have role: "Kubernetes Engine Developer"
+# - Cloud Build service account must have roles:  "Cloud Deploy Releaser", "Service Account User"
+# - Compute service account must have roles: "Kubernetes Engine Developer", "Cloud Deploy Runner"
 
 # USAGE:
-# GCP zone and GKE target cluster must be specified as substitutions
+# The release ID must be incremented/unique for each run:
 # Example invocation:
-# `gcloud builds submit --config=cloudbuild.yaml --substitutions=_ZONE=us-central1-b,_CLUSTER=demo-app-staging .`
+# `gcloud builds submit --config=cloudbuild_cd.yaml --substitutions=_REL_ID=UNIQUE.`
+# where UNIQUE is different for each release
 
+# https://cloud.google.com/deploy/docs/integrating-ci?hl=ko#an_example_configuration_using_skaffold
+# [START cloudbuild_microservice_demo_cloudbuild]
 steps:
-- id: 'Deploy application to cluster'
-  name: 'gcr.io/k8s-skaffold/skaffold:v2.14.1'
+- name: gcr.io/cloud-builders/gsutil
+  id: download-skaffold-cache
   entrypoint: 'bash'
   args:
-  - '-c'
-  - >
-    gcloud container clusters get-credentials --zone=$_ZONE $_CLUSTER;
-    skaffold run -f=skaffold.yaml --default-repo=gcr.io/$PROJECT_ID;
-
+    - '-c'
+    - 'gsutil cp -c ${_CACHE_URI} /workspace/cache || true'
+- name: gcr.io/k8s-skaffold/skaffold
+  id: build-and-push-images
+  args:
+    - skaffold
+    - build
+    - '--cache-artifacts'
+    - '--interactive=false'
+    - '--default-repo=${_DEFAUILT_REPOSITORY}'
+    - '--cache-file=/workspace/$_CACHE'   # set _CACHE to anything other than "cache" e.g. "no-cache" to reset skaffold cache
+    - '--file-output=/workspace/artifacts.json'
+- name: gcr.io/google.com/cloudsdktool/cloud-sdk
+  id: show-artifacts-json
+  entrypoint: 'bash'
+  args:
+    - '-c'
+    - 'cat /workspace/artifacts.json'
+- name: gcr.io/google.com/cloudsdktool/cloud-sdk
+  id: upload-skaffold-cache
+  args:
+    - 'gsutil'
+    - 'cp'
+    - '/workspace/$_CACHE'
+    - '${_CACHE_URI}'
+#- name: gcr.io/k8s-skaffold/skaffold:v2.8.0 # python set up should be baked into a custom builder image to speed up build times
+#  id: run-tests
+#  script: |
+#    #!/bin/bash
+#    apt-get update
+#    apt-get -y install python3-venv
+#    python3 -m venv $HOME/venv-python-tests
+#    . $HOME/venv-python-tests/bin/activate
+#    pip install --upgrade pip
+#    pip install pylint
+#    skaffold test --build-artifacts=/workspace/artifacts.json --module=$SERVICE --assume-yes
+#  env:
+#    - 'TEAM=$_TEAM'
+#    - 'SERVICE=$_SERVICE'
+- name: gcr.io/google.com/cloudsdktool/cloud-sdk
+  id: trigger-release
+  args:
+    - 'gcloud'
+    - 'deploy'
+    - 'releases'
+    - 'create'
+    - 'rel-${SHORT_SHA}'
+    - '--delivery-pipeline=${_DELIVERY_PIPELINE_NAME}'
+    - '--build-artifacts=/workspace/artifacts.json'
+    - '--region=${_REGION}'
+    - '--annotations=commitId=${REVISION_ID}'
+#   - '--gcs-source-staging-dir=$_SOURCE_STAGING_BUCKET/$SHORT_SHA'
+    
 # Add more power, and more time, for heavy Skaffold build
 timeout: '3600s'
+# https://cloud.google.com/build/docs/securing-builds/configure-user-specified-service-accounts?hl=ko#execute_a_build_using_a_config_file
+serviceAccount: 'projects/${PROJECT_ID}/serviceAccounts/ob-build-sa@kiwonlee-demo-ob.iam.gserviceaccount.com'
 options:
-  machineType: 'N1_HIGHCPU_8'
-  
+  machineType: 'E2_HIGHCPU_8'
+  logging: CLOUD_LOGGING_ONLY #https://cloud.google.com/build/docs/securing-builds/configure-user-specified-service-accounts?hl=ko#execute_a_build_using_a_config_file
+#  workerPool: 'projects/${PROJECT_ID}/locations/${_REGION}/workerPools/microservices-pp'
+
+substitutions:
+  _DELIVERY_PIPELINE_NAME: ob-pipeline
+  _DEFAUILT_REPOSITORY: us-central1-docker.pkg.dev/${PROJECT_ID}/docker-repo
+  _REGION: us-central1
+  _CACHE_URI: gs://skaffold-cache/cache
+  _CACHE: cache
+
 # [END cloudbuild_microservice_demo_cloudbuild]
