@@ -50,7 +50,6 @@ spec:
       {{- else }}
       serviceAccountName: default
       {{- end }}
-      {{- if .Values.securityContext.enable }}
       securityContext:
         fsGroup: 1000
         runAsGroup: 1000
@@ -60,7 +59,6 @@ spec:
         seccompProfile:
           type: {{ .Values.seccompProfile.type }}
         {{- end }}
-      {{- end }}
       containers:
         - name: server
           securityContext:
@@ -164,6 +162,34 @@ spec:
     port: 80
     targetPort: 8080
 {{- end }}
+{{- if .Values.frontend.gateway }}
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: Gateway
+metadata:
+  name: {{ .Values.frontend.name }}-gateway
+  namespace: {{ .Release.Namespace }}
+spec:
+  gatewayClassName: gke-l7-global-external-managed
+  listeners:    
+  - name: http
+    protocol: HTTP
+    port: 80
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: HTTPRoute
+metadata:
+  name: {{ .Values.frontend.name }}-http
+  namespace: {{ .Release.Namespace }}
+spec:
+  parentRefs:
+  - kind: Gateway
+    name: {{ .Values.frontend.name }}-gateway
+  rules:    
+  - backendRefs:
+    - name: {{ .Values.frontend.name }}
+      port: 80
+{{- end }}
 {{- if .Values.networkPolicies.create }}
 ---
 apiVersion: networking.k8s.io/v1
@@ -181,6 +207,8 @@ spec:
   ingress:
   {{- if .Values.frontend.externalService }}
   - {}
+  {{- else if .Values.frontend.gateway }}
+  - {}  
   {{- else }}
   - from:
     - podSelector:
@@ -261,6 +289,25 @@ spec:
         ports:
         - "8080"
 {{- end }}
+{{- if .Values.frontend.istioGateway.create }}
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: {{ .Values.frontend.name }}
+  namespace: {{.Release.Namespace}}
+spec:
+  selector:
+    istio: ingressgateway # use Istio default gateway implementation
+  servers:
+  - port:
+      number: {{ .Values.frontend.gateway.servers.number }}
+      name: {{ .Values.frontend.gateway.servers.name }}
+      protocol: {{ .Values.frontend.gateway.servers.protocol }}
+    hosts:
+    {{- toYaml . | nindent 2 }}
+    {{- end }}
+{{- end }}
 {{- if .Values.frontend.virtualService.create }}
 ---
 apiVersion: networking.istio.io/v1alpha3
@@ -274,12 +321,11 @@ spec:
   {{- toYaml . | nindent 2 }}
   {{- end }}
   gateways:
-  - {{ .Values.frontend.virtualService.gateway.namespace }}/{{ .Values.frontend.virtualService.gateway.name }}
+  - {{.Release.Namespace}}/{{ .Values.frontend.name }}
   http:
   - route:
     - destination:
         host: {{ .Values.frontend.name }}
         port:
           number: 80
-{{- end }}
 {{- end }}
