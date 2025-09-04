@@ -1,0 +1,25 @@
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: Gateway
+metadata:
+  name: frontend-gateway
+  namespace: ob
+spec:
+  gatewayClassName: gke-l7-global-external-managed
+  listeners:    
+  - name: http
+    protocol: HTTP
+    port: 80
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: HTTPRoute
+metadata:
+  name: frontend-http
+  namespace: ob
+spec:
+  parentRefs:
+  - kind: Gateway
+    name: frontend-gateway
+  rules:    
+  - backendRefs:
+    - name: frontend
+      port: 80
